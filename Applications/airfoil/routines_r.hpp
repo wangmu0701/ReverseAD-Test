@@ -28,16 +28,19 @@ int time_cell(T* x1, T* x2, T* x3, T* x4, T* q,
 	dy[3] = x1[1] - x4[1];
 	
 	ri = 1.0/q[0];
+        //ri = q[0];
 	u = ri*q[1];
 	v =  ri*q[2];
 	p = gm1*(q[3] - 0.5*ri*(q[1]*q[1] + q[2]*q[2]));
 	c = sqrt(gam*ri*p);
+	//c = gam*ri*p;
 	
 	adt = 0;
 
 	for (i = 0; i < 4; i++) 
 	{
 	  adt = adt+fabs(u*dy[i]-v*dx[i])+c*sqrt(dx[i]*dx[i]+dy[i]*dy[i]); 
+	  //adt = adt+fabs(u*dy[i]-v*dx[i])+c*(dx[i]*dx[i]+dy[i]*dy[i]); 
 	} 
 
 	adt = adt/cfl;
@@ -67,12 +70,14 @@ T f[4];
 	mu = 0.5*(adt1 + adt2)*eps;
 
 	r1i = 1.0/q1[0];
+	//r1i = q1[0];
 	u1 = r1i*q1[1];
 	v1 = r1i*q1[2];
 	p1 = gm1*(q1[3] - 0.5*r1i*(q1[1]*q1[1] + q1[2]*q1[2]));
 	vol1 = u1*dy - v1*dx;
 	
 	r2i = 1.0/q2[0];
+        //r2i = q2[0];
 	u2 = r2i*q2[1];
 	v2 = r2i*q2[2];
 	p2 = gm1*(q2[3] - 0.5*r2i*(q2[2]*q2[2] + q2[3]*q2[3]));
@@ -114,6 +119,7 @@ T dx, dy, ri, u,v, p;
 	dy = x1[1] - x2[1];
 
 	ri = 1.0/q[0];
+	//ri = q[0];
 	u = ri*q[1];
 	v = ri*q[2];
 	p = gm1*(q[3] - 0.5*ri*(q[1]*q[1] + q[2]*q[2]));
@@ -136,6 +142,7 @@ T dx, ri, u, v, p; // COMPUTE MOMENTUM FLUX FROM AN INDIVIDUAL WALL FACE
 	dx = x1[0] - x2[0];
 	
 	ri = 1.0/q[0];
+	//ri = q[0];
 	u = ri*q[1];
 	v = ri*q[2];
 	p = gm1*(q[3] - 0.5*ri*(q[1]*q[1] + q[2]*q[2]));

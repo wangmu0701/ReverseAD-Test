@@ -2,9 +2,12 @@
 #define MYLIB_CONSTANTS_H 1
 
 #define PRINT_HISTORY_GAP 1
-#define MAX_ITER 2
+#define MAX_ITER 3
 
 extern double gam, gm1, cfl, eps, mach, alpha;
+
+const char grid_file[50]="grid_small.dat";
+
 void input(int maxnode, int maxcell, int maxedge, int& nnode, int& ncell,
 	   int& nedge, double **x, double** q, int** cell, int** edge, 
 	   int** ecell, int* boun);

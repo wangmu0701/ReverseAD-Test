@@ -31,7 +31,7 @@ void input(int maxnode, int maxcell, int maxedge, int& nnode, int& ncell,
 //--------------------------------reda in data from grid file----------------------------------------------
 
 	ifstream f1; 
-	f1.open("grid.dat");
+	f1.open(grid_file);
 
 	f1 >> nnode >> ncell >> nedge;
 

@@ -192,7 +192,37 @@ int main()
   lift_ad >>= lift;
   trace_off();
  
+
+  double** H = new double*[num_ind];
+  for (int i = 0; i < num_ind; i++) {
+    H[i] = new double[num_ind];
+  }
+  hessian(1, num_ind, dummy_x, H);
+  int nnz = 0;
+  for (int i = 0; i < num_ind; i++) {
+    for (int j = 0; j <=i; j++) {
+      if (H[i][j] != 0) {
+        nnz++;
+      }
+    }
+  }
+  std::cout << "number of independes = " << num_ind << std::endl;
+  std::cout << "size of Hessian = " << nnz << std::endl;
+  std::ofstream fp;
+  fp.open("hessian-a.mm");
+  // banner
+  fp << "%%MatrixMarket matrix coordinate real symmetric" << std::endl;
+  fp << num_ind << " " << num_ind << " " << nnz << std::endl;
+  for (int i = 0; i < num_ind; i++) {
+    for (int j = 0; j <= i; j++) {
+      if (H[i][j] != 0) {
+        fp<<i+1<<" "<<j+1<<" "<<H[i][j]<<std::endl;
+      }
+    }
+  }
+  fp.close();
  
+/* 
   unsigned int *rind = NULL;
   unsigned int *cind = NULL;
   double * values = NULL;
@@ -201,11 +231,41 @@ int main()
   sparse_hess(1, num_ind, 0, dummy_x, &nnz, &cind, &rind, &values, options);
   std::cout << "number of independes = " << num_ind << std::endl;
   std::cout << "size of Hessian = " << nnz << std::endl;
+  std::ofstream fp;
+  fp.open("hessian.mm");
+  // banner
+  fp << "%%MatrixMarket matrix coordinate real symmetric" << std::endl;
+  fp << num_ind << " " << num_ind << " " << nnz << std::endl;
+  for (int i = 0; i < nnz; i++) {
+    fp << cind[i] << " " << rind[i] << " " << values[i] << std::endl;
+  }
+  fp.close();
+*/
+/*
+  double* v = new double[num_ind];
+  double* hv = new double[num_ind];
+  for (int i = 0; i < num_ind; i++) {
+    v[i] = i+1.0;
+    hv[i] = 0.0;
+  } 
+  hess_vec(1, num_ind, dummy_x, v, hv);
+  std::ofstream fp;
+  fp.open("vector.mm");
+  //fp << "%%MatrixMarket matrix array real general" << std::endl;
+  //fp << num_ind << " 1 " << std::endl;
+  for (int i = 0; i < num_ind; i++) {
+    if (hv[i] != 0.0) {
+      fp << "hv["<<i<<"] = "<<hv[i] << std::endl;
+    }
+  }
+  fp.close();
+*/
 /*
 // let's first compute gradient
   double* g = new double[num_ind];
   std::cout << "number of independes = " << num_ind << std::endl;
   gradient(1, num_ind, dummy_x, g);
+
   int g_nnz = 0;
   for (int i = 0; i < num_ind; i++) {
     if (g[i] != 0.0) {
@@ -213,6 +273,7 @@ int main()
       g_nnz++;
     }
   }
+
   std::cout << "size of gradient = " << g_nnz << std::endl;
 */
 #endif

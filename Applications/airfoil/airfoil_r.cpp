@@ -7,25 +7,15 @@
 #include<cmath>
 #include<memory>
     
-#include"const.h"
-
-//#define USING_REVERSEAD
-
-#ifdef USING_ADOLC
-#include "adolc/adolc.h"
-#include "adolc/adolc_sparse.h"
-#endif
+#include "airfoil_func.hpp"
 
 #ifdef USING_REVERSEAD
 #include "reversead/reversead.hpp"
 #endif
 
-#include "routines_r.hpp"
-
 double gam, gm1, cfl, eps, mach, alpha;    
     
-int main()
-{
+int main(int argc, char* argv[]) {
   int i;
   const int maxnode = 721801;
   const int maxcell = 720001;
@@ -52,148 +42,48 @@ int main()
   for (i = 0; i < maxcell; i++)
     q[i] = new double[4];
 
-  double **qold = new double*[maxcell];
-  for (i = 0; i < maxcell; i++)
-    qold[i] = new double[4];
-
-  double *adt = new double[maxcell];
-
-  double **res = new double*[maxcell];
-  for (i = 0; i < maxcell; i++)
-    res[i] = new double[4];
-
-  int in1, in2, in3, in4, ic, ic1, ic2, ie, ipde, iter, niter, k, nnode, ncell, nedge;
- 
+  int nnode, ncell, nedge; 
 //------read in grid and flow data-------------
   input(maxnode, maxcell, maxedge, nnode, ncell, nedge, x, q, cell, edge, ecell, boun);
- 
-  std::cout << "nnode = " << nnode << std::endl;
-  std::cout << "ncell = " << ncell << std::endl;
-  std::cout << "nedge = " << nedge << std::endl;
 
 #ifdef USING_REVERSEAD
   std::cout << "using ReverseAD ..." << std::endl;
   typedef ReverseAD::adouble active_type;
-  active_type** x_ad = new active_type*[nnode];
-  for (int i = 0; i < nnode; i++) 
-    x_ad[i] = new active_type[2];
-
-  active_type** q_ad = new active_type*[ncell];
-  for (int i = 0; i < ncell; i++)
-    q_ad[i] = new active_type[4];
-
-  active_type** qold_ad = new active_type*[ncell];
-  for (int i = 0; i < ncell; i++)
-    qold_ad[i] = new active_type[4];
-
-  active_type* adt_ad = new active_type[ncell];
-
-  active_type** res_ad = new active_type*[ncell];
-  for (int i = 0; i < ncell; i++)
-    res_ad[i] = new active_type[4];
-
-  active_type lift_ad, rms_ad;
-
-// Independent : x and q
-
+  int num_ind = nnode*2+ncell*4;
 #ifdef COMPUTE_DERIVATIVE
   std::cout << "Will evaluate the derivative ... " << std::endl;
   ReverseAD::trace_on<double>();
 #endif
-  int num_ind = 0;
+  active_type* dummy_x = new active_type[num_ind];
+  int l = 0;
   for (int i = 0; i < nnode; i++) {
-    x_ad[i][0] <<= x[i][0];
-    x_ad[i][1] <<= x[i][1];
-    num_ind += 2;
+    dummy_x[l++] <<= x[i][0];
+    dummy_x[l++] <<= x[i][1];
   }
   for (int i = 0; i < ncell; i++) {
     for (int j = 0; j < 4; j++) {
-      q_ad[i][j] <<= q[i][j];
-      num_ind++;
+      dummy_x[l++] <<= q[i][j];
     }
   }
-
 #else
-  double** x_ad = x;
-  double** q_ad = q;
-  double** qold_ad = qold;
-  double* adt_ad = adt;
-  double** res_ad = res;
-  double lift_ad, rms_ad;
-
+  int num_ind = nnode*2+ncell*4;
+  double* dummy_x = new double[num_ind];
+  int l = 0;
+  for (int i = 0; i < nnode; i++) {
+    dummy_x[l++] = x[i][0];
+    dummy_x[l++] = x[i][1];
+  }
+  for (int i = 0; i < ncell; i++) {
+    for (int j = 0; j < 4; j++) {
+      dummy_x[l++] = q[i][j];
+    }
+  }
+ 
   typedef double active_type;
 #endif
 
-//----main time-marching loop------------------
-  niter = MAX_ITER;
-  for(iter = 0;iter < niter;++iter) {
- 
-//----save old flow solution--------------------
-    for(ic=0; ic< ncell-1; ++ic) {
-      for( ipde = 0;ipde < 4; ++ipde) {
-        qold_ad[ic][ipde] = q_ad[ic][ipde];
-      }
-    }
-//-----predictor/corrector update loop----------
+  active_type lift_ad = airfoil_func<active_type>(dummy_x, num_ind, nnode, ncell, nedge, ecell, boun, edge, cell);
 
-    for(k = 0; k < 2 ; ++k) { 
-      for(ic = 0; ic < ncell; ++ic) {
-        for(ipde = 0;ipde < 4; ++ipde) {
-          res_ad[ic][ipde] = 0.0;
-        }
-      }
-//-----calculate area/timstep------------------
-      for (ic = 0; ic < ncell - 1; ++ic) {
-        in1 = cell[ic][0] -1;
-        in2 = cell[ic][1] -1;
-        in3 = cell[ic][2] -1;
-        in4 = cell[ic][3] -1;
-        time_cell<active_type>(&x_ad[in1][0], &x_ad[in2][0], &x_ad[in3][0],&x_ad[in4][0],&q_ad[ic][0],adt_ad[ic]);
-      }
-
-      adt[ncell] = 0.0;
-//-----flux evaluation loop--------------------
-      for (ie = 0;ie < nedge; ++ie) {
-        in1 = edge[ie][0] -1;
-        in2 = edge[ie][1] -1;
-        ic1 = ecell[ie][0]-1;
-        ic2 = ecell[ie][1]-1;
-        if (boun[ie] == 0)  {
-          flux_face<active_type>(&x_ad[in1][0], &x_ad[in2][0], &q_ad[ic1][0], &q_ad[ic2][0],adt_ad[ic1], adt_ad[ic2], &res_ad[ic1][0], &res_ad[ic2][0]);
-        } else if (boun[ie] == 1) {
-          flux_wall<active_type>(&x_ad[in1][0], &x_ad[in2][0], &q_ad[ic2][0], &res_ad[ic2][0]);
-        } else if (boun[ie] == 2) {
-          std::cout << "exit on boun[ie] == 2, something wrong?" << std::endl;
-          exit(0);
-        }
-      }
-    }
-//-----flow field update-----------------------
-    rms_ad = 0.0;
-    for (ic = 0;ic < ncell - 1; ++ic) {
-      for(ipde = 0;ipde < 4; ++ipde) {
-        q_ad[ic][ipde] = qold_ad[ic][ipde] - res_ad[ic][ipde]/adt_ad[ic];
-        rms_ad = rms_ad + (pow((q_ad[ic][ipde] - qold_ad[ic][ipde]),2));
-      }
-    }
-    rms_ad = sqrt(rms_ad/ncell);
-
-//-----print iteration history, including lift calculation
-    if( (iter % PRINT_HISTORY_GAP) == 0) {
-      lift_ad = 0.0;
-      for(ie = 0;ie < nedge; ++ie) {
-        if((boun[ie]) == 1) {
-          in1 = edge[ie][0] -1;
-          in2 = edge[ie][1] -1;
-          ic2 = ecell[ie][1]-1;
-          lift_wall<active_type>(&x_ad[in1][0],&x_ad[in2][0],&q_ad[ic2][0], lift_ad);
-        }
-      }
-      std::cout << "iter = " << iter
-                << ", rms = " << rms_ad
-                << ", lift = " << lift_ad << std::endl;
-    }
-  }
 
 #ifdef USING_REVERSEAD
 
@@ -221,12 +111,69 @@ int main()
 */
   tensor->get_internal_coordinate_list(0, 2, &size, &tind, &values);
   std::cout << "size of hessian = " << size << std::endl;
+/*
+  double* hv = new double[num_ind];
+  for (int i = 0; i < num_ind; i++) {
+    hv[i] = 0;
+  }
+  for (int i = 0; i < size; i++) {
+    if (tind[i][0] != tind[i][1]) {
+      hv[tind[i][0]] += values[i] * (tind[i][1]+1.0);
+      hv[tind[i][1]] += values[i] * (tind[i][0]+1.0);
+    } else {
+      hv[tind[i][0]] += values[i] * (tind[i][0]+1.0);
+    }
+  }
+  std::ofstream fp;
+  fp.open("hessian-v.mm");
+  for (int i = 0; i < size; i++) {
+    if (hv[i] != 0.0) {
+      fp << "hv["<<i<<"] = " << hv[i] << std::endl;
+    }
+  }
+  fp.close();
+*/
+  std::ofstream fp;
+  fp.open("hessian.mm");
+  // banner
+  fp << "%%MatrixMarket matrix coordinate real symmetric" << std::endl;
+  fp << num_ind << " " << num_ind << " " << size << std::endl;
+  for (int i = 0; i < size; i++) {
+    fp << tind[i][0]+1 << " " << tind[i][1]+1 << " " << values[i] << std::endl; 
+  }
+  fp.close();
+#endif
+#else 
+
+#ifdef HESSIAN_CHECK
+// Now we can run some checks
+  if (argc < 3) {
+    std::cout << "Usage: ./check_hess rind cind [eps (optional)]" << std::endl;
+    exit(-1);
+  }
+  int r = atoi(argv[1]);
+  int c = atoi(argv[2]);
+  double eps = 1.0e-8;
+  if (argc > 3) {
+    eps = atof(argv[3]);
+  } 
+  double fxy = lift_ad;
+  dummy_x[r]+=eps;
+  double fdxy = airfoil_func<double>(dummy_x, num_ind, nnode, ncell, nedge, ecell, boun, edge, cell);
+  dummy_x[c]+=eps;
+  double fdxdy = airfoil_func<double>(dummy_x, num_ind, nnode, ncell, nedge, ecell, boun, edge, cell);
+  dummy_x[r]-=eps;
+  double fxdy = airfoil_func<double>(dummy_x, num_ind, nnode, ncell, nedge, ecell, boun, edge, cell);
+  double he = (fxy+fdxdy-fdxy-fxdy)/(eps*eps);
+  printf("fxy = %.10f\n", fxy);
+  printf("fdxy = %.10f\n", fdxy);
+  printf("fxdy = %.10f\n", fxdy);
+  printf("fdxdy = %.10f\n", fdxdy);
+  std::cout << "Finite difference H["<<r<<"]["<<c<<"] = " << he << std::endl;
+#endif
 #endif
 
-#else
-  output(ncell, q);
-#endif
-  for (ie = 0; ie < maxedge; ie++)
+  for (int ie = 0; ie < maxedge; ie++)
     delete[] ecell[ie];
   delete[] ecell;
 
@@ -247,16 +194,6 @@ int main()
   for (i = 0; i < maxcell; i++)
     delete[] q[i];
   delete[] q;
-
-  for (i = 0; i < maxcell; i++)
-    delete[] qold[i];
-   delete[] qold;
-
-  delete[] adt;
-
-  for (i = 0; i < maxcell; i++)
-    delete[] res[i];
-  delete[] res;
 
   return 0;
 }
