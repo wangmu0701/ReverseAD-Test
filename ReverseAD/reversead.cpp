@@ -14,6 +14,8 @@ using ReverseAD::TrivialTrace;
 using ReverseAD::BaseReverseHessian;
 using ReverseAD::BaseReverseThird;
 using ReverseAD::BaseReverseGeneric;
+using ReverseAD::BaseReverseGenerator;
+using ReverseAD::BaseReverseTensor;
 using ReverseAD::DerivativeTensor;
 using ReverseAD::trace_on;
 using ReverseAD::trace_off;
@@ -50,6 +52,7 @@ int main() {
   double func_time = time_elapsed;
 
   BaseReverseGeneric<double> generic(trace, DERIVATIVE_ORDER);
+//  BaseReverseThird<double> generic(trace);
   std::shared_ptr<DerivativeTensor<int, double>> tensor =
       generic.compute(NUM_IND, 1).get_tensor();
 
