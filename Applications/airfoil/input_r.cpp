@@ -73,11 +73,13 @@ void input(int maxnode, int maxcell, int maxedge, int& nnode, int& ncell,
 //	f2.open("flow.dat");	
 
 //	f2 >> p >> r >> mach >> alpha;
-
+//0.97755158667513598       0.37460402657539099       -5.1789191830683499E-002   2.5293602900429799
 	p = 1.0;
 	r = 1.0;
-        mach = 0.4;
-        alpha = 3;
+        //mach = 0.4;
+        alpha = 1;
+        mach = -5.1789191830683499E-002;
+        //alpha = 2.5293602900429799;
 
 	alpha = alpha*atan(1.0)/45.0;
 

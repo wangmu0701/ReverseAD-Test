@@ -7,11 +7,11 @@
 #include<cmath>
 #include<memory>
     
-#include "airfoil_func.hpp"
-
 #ifdef USING_REVERSEAD
 #include "reversead/reversead.hpp"
 #endif
+
+#include "airfoil_func.hpp"
 
 double gam, gm1, cfl, eps, mach, alpha;    
     

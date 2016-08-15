@@ -2,7 +2,7 @@
 #define MYLIB_CONSTANTS_H 1
 
 #define PRINT_HISTORY_GAP 1
-#define MAX_ITER 3
+#define MAX_ITER 1
 
 extern double gam, gm1, cfl, eps, mach, alpha;
 
