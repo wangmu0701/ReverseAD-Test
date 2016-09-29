@@ -3,7 +3,8 @@
 #include<cstdlib>
 #include<cmath>
 #include<memory>
-    
+#include<sys/time.h>
+
 #include"const.h"
 
 #include "adolc/adolc.h"
@@ -192,7 +193,7 @@ int main()
   lift_ad >>= lift;
   trace_off();
  
-
+/*
   double** H = new double*[num_ind];
   for (int i = 0; i < num_ind; i++) {
     H[i] = new double[num_ind];
@@ -221,18 +222,22 @@ int main()
     }
   }
   fp.close();
- 
-/* 
+*/
+  struct timeval tv1, tv2; 
   unsigned int *rind = NULL;
   unsigned int *cind = NULL;
   double * values = NULL;
   int nnz;
   int options[2] = {0, 1}; // direct recovery
+  gettimeofday(&tv1, NULL);
   sparse_hess(1, num_ind, 0, dummy_x, &nnz, &cind, &rind, &values, options);
+  gettimeofday(&tv2, NULL);
+  double time_elapsed = (tv2.tv_sec - tv1.tv_sec) - (tv2.tv_usec - tv1.tv_usec) / 1000000.0;
+  printf("ADOLC DIRECT cost = %.8f seconds\n", time_elapsed);
   std::cout << "number of independes = " << num_ind << std::endl;
   std::cout << "size of Hessian = " << nnz << std::endl;
   std::ofstream fp;
-  fp.open("hessian.mm");
+  fp.open("hessian-a.mm");
   // banner
   fp << "%%MatrixMarket matrix coordinate real symmetric" << std::endl;
   fp << num_ind << " " << num_ind << " " << nnz << std::endl;
@@ -240,7 +245,7 @@ int main()
     fp << cind[i] << " " << rind[i] << " " << values[i] << std::endl;
   }
   fp.close();
-*/
+
 /*
   double* v = new double[num_ind];
   double* hv = new double[num_ind];

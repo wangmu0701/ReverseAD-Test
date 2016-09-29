@@ -6,6 +6,7 @@
 #include<cstdlib>
 #include<cmath>
 #include<memory>
+#include<sys/time.h>
     
 #ifdef USING_REVERSEAD
 #include "reversead/reversead.hpp"
@@ -86,6 +87,7 @@ int main(int argc, char* argv[]) {
 
 
 #ifdef USING_REVERSEAD
+  struct timeval tv1, tv2;
 
 #ifdef COMPUTE_DERIVATIVE
   // make lift to be the dependent variable
@@ -95,9 +97,13 @@ int main(int argc, char* argv[]) {
   std::shared_ptr<ReverseAD::TrivialTrace<double>> trace = ReverseAD::trace_off<double>();
   std::cout << "Function tracing done" << std::endl;
 
+  gettimeofday(&tv1, NULL);
   ReverseAD::BaseReverseHessian<double> hessian(trace);
   std::shared_ptr<ReverseAD::DerivativeTensor<size_t, double>> tensor =
       hessian.compute(num_ind, 1);
+  gettimeofday(&tv2, NULL);
+  double time_elapsed = (tv2.tv_sec - tv1.tv_sec) + (tv2.tv_usec -tv1.tv_usec) / 1000000.0;
+  printf("ReverseAD cost = %.8f seconds\n", time_elapsed);
   size_t size;
   size_t** tind;
   double* values;

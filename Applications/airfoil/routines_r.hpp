@@ -77,12 +77,11 @@ int time_cell(T* x1, T* x2, T* x3, T* x4, T* q,
 
 	for (i = 0; i < 4; i++) 
 	{
-          T t = u*dy[i] - v*dx[i];
-          dump(t);
-          adt = adt+fabs(t)+c*sqrt(dx[i]*dx[i]+dy[i]*dy[i]); 
-	  //adt = adt+fabs(u*dy[i]-v*dx[i])+c*sqrt(dx[i]*dx[i]+dy[i]*dy[i]); 
+          //T t = u*dy[i] - v*dx[i];
+          //dump(t);
+          //adt = adt+fabs(t)+c*sqrt(dx[i]*dx[i]+dy[i]*dy[i]); 
+	  adt = adt+fabs(u*dy[i]-v*dx[i])+c*sqrt(dx[i]*dx[i]+dy[i]*dy[i]); 
 	  //adt = adt+(u*dy[i]-v*dx[i])+c*sqrt(dx[i]*dx[i]+dy[i]*dy[i]); 
-	  //adt = adt+fabs(u*dy[i]-v*dx[i])+c*(dx[i]*dx[i]+dy[i]*dy[i]); 
 	} 
 
 	adt = adt/cfl;

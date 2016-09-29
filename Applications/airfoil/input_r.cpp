@@ -69,18 +69,19 @@ void input(int maxnode, int maxcell, int maxedge, int& nnode, int& ncell,
 
 //-------------------------read in data from flow file,initialising if necessary-----------------------	
 	
-//        ifstream f2; 
-//	f2.open("flow.dat");	
+        ifstream f2; 
+	f2.open("flow.dat");	
 
-//	f2 >> p >> r >> mach >> alpha;
+	f2 >> p >> r >> mach >> alpha;
 //0.97755158667513598       0.37460402657539099       -5.1789191830683499E-002   2.5293602900429799
+/*
 	p = 1.0;
 	r = 1.0;
         //mach = 0.4;
         alpha = 1;
         mach = -5.1789191830683499E-002;
         //alpha = 2.5293602900429799;
-
+*/
 	alpha = alpha*atan(1.0)/45.0;
 
 	u = sqrt(gam*p/r)*mach;
@@ -94,7 +95,7 @@ void input(int maxnode, int maxcell, int maxedge, int& nnode, int& ncell,
 		q[ic][2] = 0.0;
 		q[ic][3] = r*e;		
 	}
-/*	
+	
         for (ic = 0; ic < ncell && !f2.eof(); ic++) 
         {
 		for (ipde = 0; ipde < 4 && !f2.eof(); ipde++) 
@@ -102,8 +103,8 @@ void input(int maxnode, int maxcell, int maxedge, int& nnode, int& ncell,
 			f2 >> q[ic][ipde];	
 		}
 	}
-*/
-//	f2.close();
+
+        f2.close();
 
 //-----------------------------rotate grid to specified angle of attack------------------------------------
 	

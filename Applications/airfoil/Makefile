@@ -4,7 +4,10 @@ ADOLCHOME = $(HOME)/packages/adolc
 #CXX=/usr/local/bin/g++
 CXX=g++
 
-all : airfoil airfoil_revad airfoil_deriv airfoil_adolc airfoil_adolc_dev check_hess
+all : airfoil airfoil_revad airfoil_deriv airfoil_adolc airfoil_adolc_dev check_hess airfoil_iter
+
+airfoil_iter : airfoil_iter.cpp input_r.cpp routines_r.hpp const.h
+	$(CXX) -std=c++11 -g -O0 -I$(ReverseADHOME)/include airfoil_iter.cpp input_r.cpp -o $@ -L$(ReverseADHOME)/lib -lreversead
 
 airfoil : airfoil_r.cpp airfoil_func.hpp input_r.cpp routines_r.hpp const.h
 	$(CXX) -std=c++11 -g -O0 -I$(ReverseADHOME)/include airfoil_r.cpp input_r.cpp -o $@ -L$(ReverseADHOME)/lib -lreversead
