@@ -1,15 +1,20 @@
 CXX=g++
 CXXFLAGS=-std=c++11
-all : stream_vel
 
-stream_vel : driver.o stream_vel_timedep.o
-	$(CXX) $(CXXFLAGS) -o $@ $^ 
+REVERSEADPATH=$(HOME)/packages/reversead/
 
+all : stream_vel stream_vel_reversead gradient
 
-%.o : %.cpp
-	$(CXX) $(CXXFLAGS) -o $@ -c $<
+stream_vel : stream_vel.cpp stream_vel.hpp
+	$(CXX) $(CXXFLAGS) -o $@ stream_vel.cpp
+
+stream_vel_reversead : stream_vel.cpp stream_vel.hpp
+	$(CXX) $(CXXFLAGS) -D USING_REVERSEAD -o $@ stream_vel.cpp -I$(REVERSEADPATH)/include -L$(REVERSEADPATH)/lib -lreversead
+
+gradient : stream_vel.cpp stream_vel.hpp
+	$(CXX) $(CXXFLAGS) -D USING_REVERSEAD -D CHECK_GRADIENT -o $@ stream_vel.cpp -I$(REVERSEADPATH)/include -L$(REVERSEADPATH)/lib -lreversead
 
 clean:
-	rm -f *.o stream_vel
+	rm -f stream_vel stream_vel_reversead gradient
 
 .PHONY: clean
