@@ -224,10 +224,8 @@ void solve(double* x, double* b, double A[N][3]) {
         ax[i] = ax[i] + A[i][2] * p[i+1];
       }
     }
-    dp1 = 0;
     dp2 = 0;
     for (int i = 0; i < N; i++) {
-      dp1 += r[i] * r[i];
       dp2 += p[i] * ax[i];
     }
     alpha = dp1 / dp2;
@@ -237,18 +235,10 @@ void solve(double* x, double* b, double A[N][3]) {
       x[i] = x[i] + alpha*p[i];
       r[i] = r[i] - alpha*ax[i];
     }
-/*
+    dp2 = dp1; // norm2(r_old);
     dp1 = 0;
     for (int i = 0; i < N; i++) {
       dp1 += r[i] * r[i];
-    } 
-    resid = sqrt(dp1);
-*/
-    dp1 = 0;
-    dp2 = 0;
-    for (int i = 0; i < N; i++) {
-      dp1 += r[i] * r[i];
-      dp2 += r_old[i] * r_old[i];
     }
     beta = dp1 / dp2;
     resid = sqrt(dp1);    
