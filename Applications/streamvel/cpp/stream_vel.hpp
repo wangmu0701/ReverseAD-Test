@@ -2,15 +2,6 @@
 
 #define N 79
 
-#ifdef USING_REVERSEAD
-#include "reversead/reversead.hpp"
-
-using ReverseAD::adouble;
-typedef adouble scalar;
-#else
-typedef double scalar;
-#endif // scalar
-
 constexpr int n_nl = 60;
 constexpr int n_timesteps = 10;
 constexpr double dt = 0.04;
@@ -54,6 +45,8 @@ template <typename T>
 void phi(T*, T*, T*, T*, T*);
 template <typename T>
 void solve(T*, T*, T[N][3]);
+template <typename T>
+void solve_lu(T*, T*, T[N][3]);
 
 // here reference on fc mimics the intent(inout) for non-pointer types
 template <typename T>
@@ -147,8 +140,8 @@ void phi(T* u_i, T* u_ip1, T* b, T* h, T* beta_fric) {
   stream_vel_assemble<T>(nu, beta_fric, A);
   for (int i = 0; i < N; i++) {utmp[i] = 0.0;}
   
-  // solve(utmp, b, A);
-  solve<T>(utmp, b, A);
+  //solve<T>(utmp, b, A);
+  solve_lu<T>(utmp, b, A);
   for (int i = 0; i < N; i++) {
     u_ip1[i+1] = utmp[i];
   }
@@ -255,4 +248,29 @@ void solve(T* x, T* b, T A[N][3]) {
     }
     
   }
+}
+
+template <typename T>
+void solve_lu(T* x, T* b, T A[N][3]) {
+  T d[N];
+  T l[N];
+  d[0] = sqrt(A[0][1]); l[0] = A[0][2] / d[0];
+  for (int i = 1; i < N; i++) {
+    d[i] = sqrt(A[i][1] - A[i][0]*A[i][0]/(d[i-1]*d[i-1]));
+    l[i] = A[i][2] / d[i];
+  }
+  // A = L * L^T x = b;
+  // L * y = b;
+  T y[N];
+  for (int i = 0; i < N-1; i++) {
+    y[i] = b[i] / d[i];
+    b[i+1] -= y[i] * l[i];
+  }
+  y[N-1] = b[N-1] / d[N-1];
+  // L^T x = y;
+  for (int i = N-1; i > 0; i--) {
+    x[i] = y[i] / d[i];
+    y[i-1] -= x[i] * l[i-1];
+  }
+  x[0] = y[0] / d[0];
 }
