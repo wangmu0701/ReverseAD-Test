@@ -1,5 +1,5 @@
 CXX=g++
-CXXFLAGS=-std=c++11
+CXXFLAGS=-O3 -std=c++11
 
 REVERSEADPATH=$(HOME)/packages/reversead
 ADOLCPATH=$(HOME)/packages/adolc

@@ -24,7 +24,7 @@ void init_adouble(adouble* h, adouble* u) {
 
   }
   for (int i = 0; i <= N; i++) {
-    u[i] <<= 0.0;
+    u[i] = 0.0;
   }
 }
 #endif
@@ -71,7 +71,7 @@ int main() {
   double gradient_reversead[N];
   gettimeofday(&tv1, NULL);
   BaseReverseAdjoint<double> adjoint(trace);
-  shared_ptr<DerivativeTensor<size_t, double>> tensor = adjoint.compute(N*2+1, 1);
+  shared_ptr<DerivativeTensor<size_t, double>> tensor = adjoint.compute(N, 1);
   gettimeofday(&tv2, NULL);
   time_elapsed = (tv2.tv_sec - tv1.tv_sec) +
                         (tv2.tv_usec - tv1.tv_usec) / 1000000.0;
@@ -92,7 +92,7 @@ int main() {
   double hessian_reversead[N][N];
   gettimeofday(&tv1, NULL);
   BaseReverseHessian<double> hessian(trace);
-  shared_ptr<DerivativeTensor<size_t, double>> tensor = hessian.compute(N*2+1, 1);
+  shared_ptr<DerivativeTensor<size_t, double>> tensor = hessian.compute(N, 1);
   gettimeofday(&tv2, NULL);
   time_elapsed = (tv2.tv_sec - tv1.tv_sec) +
                         (tv2.tv_usec - tv1.tv_usec) / 1000000.0;
