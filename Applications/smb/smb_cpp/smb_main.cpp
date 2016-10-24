@@ -17,6 +17,7 @@ using namespace ReverseAD;
 #endif
 
 double ep = 1.0e-5;
+double ep2 = 1.0e-10;
 
 double k_getTime() {
    struct timeval v;
@@ -24,6 +25,31 @@ double k_getTime() {
    gettimeofday(&v, &z);
    return ((double)v.tv_sec)+((double)v.tv_usec)/1000000;
 }
+#ifdef USING_ADOLC
+void generate_multi(int curr_level, int max_level, int d, int n,
+                    int prev_value, int* multi, double** tensorhelp) {
+  int i;
+  if (curr_level > max_level) {
+    int add;
+    double ret;
+    add = tensor_address(d, multi);
+    ret = tensorhelp[0][add];
+    if (fabs(ret) > ep2) {
+      std::cout << "T[ ";
+      for(i=0; i<= max_level; i++) {
+        std::cout << multi[i]-1 << " ";
+      }
+      std::cout << "] = " << ret << std::endl;
+    }
+  } else {
+    for(i = prev_value; i >0 ; i--) {
+      multi[curr_level] = i;
+      generate_multi(curr_level+1, max_level, d, n, i, multi, tensorhelp);
+      multi[curr_level] = 0;
+    }
+  }
+}
+#endif // USING_ADOLC
 
 void init_dim(int *n, int *m);
 void init_startpoint(double *x, int n);
@@ -124,6 +150,40 @@ int main(int argc, char* argv[])
     hessian_ad[tind[i][0]][tind[i][1]] = values[i];
   }
 #endif // COMPUTE_HESSIAN
+#ifdef COMPUTE_THIRD
+  t1 = k_getTime();
+  BaseReverseThird<double> third(trace);
+  std::shared_ptr<DerivativeTensor<size_t, double>> tensor = third.compute(n, 1);
+  t2 = k_getTime();
+  std::cout << "ReverseAD Third cost : " << t2 - t1 << std::endl;
+  size_t size;
+  size_t** tind;
+  double* values;
+  tensor->get_internal_coordinate_list(0, 3, &size, &tind, &values);
+  std::cout << "size of third = " << size << std::endl;
+#endif // COMPUTE_THIRD
+#ifdef COMPUTE_HIGHER_ORDER
+  int order = atoi(argv[1]);
+  t1 = k_getTime();
+  BaseReverseTensor<double> reverse_tensor(trace, order);
+  std::shared_ptr<DerivativeTensor<size_t, double>> tensor = reverse_tensor.compute(n, 1);
+  t2 = k_getTime();
+  std::cout << "ReverseAD Order["<<order<<"] cost : " << t2 - t1 << std::endl;
+  size_t size;
+  size_t** tind;
+  double* values;
+  tensor->get_internal_coordinate_list(0, order, &size, &tind, &values);
+  std::cout << "size of Order["<<order<<"] = " << size << std::endl;
+#ifdef CHECK_HIGHER_ORDER
+  for (int i = 0; i < size; i++) {
+    std::cout << "T[ ";
+    for (int j = 0; j < order; j++) {
+      std::cout << tind[i][j] << " "; 
+    }
+    std::cout << "] = " << values[i] << std::endl;
+  }
+#endif // CHECK_HIGHER_ORDER
+#endif // COMPUTE_HIGHER_ORDER
 #endif // USING_REVERSEAD
 #ifdef USING_ADOLC
   trace_off();
@@ -163,7 +223,32 @@ int main(int argc, char* argv[])
     //cout << "H["<<rind[i]<<","<<cind[i]<<"] = "<<values[i]<< std::endl;
     hessian_ad[cind[i]][rind[i]] = values[i];
   } 
-#endif
+#endif // COMPUTE_HESSIAN
+#ifdef COMPUTE_HIGHER_ORDER
+  int order = atoi(argv[1]);
+  double** seed = new double*[n];
+  for (int i = 0; i < n; i++) {
+    seed[i] = new double[n];
+    for (int j = 0; j < n; j++) {
+      seed[i][j] = ((i==j)?1.0:0.0);
+    }
+  }
+  int dim = binomi(n+order, order);
+  double** tensorhelp = myalloc2(n, dim);
+  std::cout << "order = " << order << ", dim = " << dim << std::endl;
+  t1 = k_getTime();
+  tensor_eval(1, 1, n, order, n, x, tensorhelp, seed);
+  t2 = k_getTime();
+  std::cout << "ADOLC Order["<<order<<"] cost : " << t2 - t1 << std::endl;
+#ifdef CHECK_HIGHER_ORDER
+  int multi[order];
+  for (int i = 0; i < order; i++) {multi[i] = 0;}
+  for (int i = 0; i < order; i++) {
+    generate_multi(0, i, order, n, n, multi, tensorhelp);
+  }
+#endif // CHECK_HIGHER_ORDER
+ 
+#endif // COMPUTE_HIGHER_ORDER
 #endif // USING_ADOLC
 #endif
 
