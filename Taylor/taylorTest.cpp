@@ -81,12 +81,13 @@ int main(int argc, char *argv[]) {
   }
   int dim = binomi(n + d, d);
   std::cout << "d = " << d <<", dim = " << dim <<std::endl;
-  double** tensorhelp = myalloc2(n, dim);
+  double** tensorhelp = myalloc2(1, dim);
   tensor_eval(tag, 1, n, d, n, x, tensorhelp, S);
 
   gettimeofday(&tv2, NULL);
   time_elapsed = (tv2.tv_sec - tv1.tv_sec) + (double)(tv2.tv_usec - tv1.tv_usec) / 1000000;
 
+#define PRINT_RESULTS
 #ifdef PRINT_RESULTS
   int* multi = new int[d];
   for (i=0; i<d; ++i) { multi[i] = 0;}

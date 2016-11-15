@@ -234,7 +234,7 @@ int main(int argc, char* argv[])
     }
   }
   int dim = binomi(n+order, order);
-  double** tensorhelp = myalloc2(n, dim);
+  double** tensorhelp = myalloc2(1, dim);
   std::cout << "order = " << order << ", dim = " << dim << std::endl;
   t1 = k_getTime();
   tensor_eval(1, 1, n, order, n, x, tensorhelp, seed);
