@@ -6,9 +6,9 @@
 //
 // transferred to C by A. Walther / TU Dresden, Jun 5 2007
 
-#define nel 2
-#define ndis  2                     // =>
-#define cstr 406
+//#define nel 2
+//#define ndis  2                     // =>
+//#define cstr 406
 //#define nel 5
 //#define ndis  10                     // =>
 //#define cstr 4375
@@ -43,13 +43,13 @@
 
 
 // ad2008:
-//#define nel 5
+#define nel 5
 // 1
 //#define ndis  10                     // =>
 //#define cstr 4375
 // 2
-//#define ndis  20                     // =>
-//#define cstr 8575
+#define ndis  20                     // =>
+#define cstr 8575
 // 3
 //#define ndis  40                     // =>  n = 16980
 //#define cstr 16975

@@ -109,7 +109,9 @@ int main(int argc, char* argv[])
   std::cout << "The time needed for overloaded function evaluation : " << t2 - t1 << std::endl;
 #ifdef USING_REVERSEAD
   std::shared_ptr<TrivialTrace<double>> trace = trace_off<double>();
+  int order = 0;
 #ifdef COMPUTE_GRADIENT
+  order = 1;
   double gradient_ad[n];
   t1 = k_getTime();
   BaseReverseAdjoint<double> adjoint(trace);
@@ -129,6 +131,7 @@ int main(int argc, char* argv[])
   }
 #endif // REVERSEAD_GRADIENT 
 #ifdef COMPUTE_HESSIAN
+  order = 2;
   double hessian_ad[n][n];
   t1 = k_getTime();
   BaseReverseHessian<double> hessian(trace);
@@ -151,6 +154,7 @@ int main(int argc, char* argv[])
   }
 #endif // COMPUTE_HESSIAN
 #ifdef COMPUTE_THIRD
+  order = 3;
   t1 = k_getTime();
   BaseReverseThird<double> third(trace);
   std::shared_ptr<DerivativeTensor<size_t, double>> tensor = third.compute(n, 1);
@@ -163,7 +167,7 @@ int main(int argc, char* argv[])
   std::cout << "size of third = " << size << std::endl;
 #endif // COMPUTE_THIRD
 #ifdef COMPUTE_HIGHER_ORDER
-  int order = atoi(argv[1]);
+  order = atoi(argv[1]);
   t1 = k_getTime();
   BaseReverseTensor<double> reverse_tensor(trace, order);
   std::shared_ptr<DerivativeTensor<size_t, double>> tensor = reverse_tensor.compute(n, 1);
@@ -184,7 +188,19 @@ int main(int argc, char* argv[])
   }
 #endif // CHECK_HIGHER_ORDER
 #endif // COMPUTE_HIGHER_ORDER
+if (argc > 2) { // the second argument
+  std::ofstream of("sparsity.pat");
+  of << order << " " << size << std::endl;
+  for (int i = 0; i < size; i++) {
+    for (int j = 0; j < order; j++) {
+     of << tind[i][j] << " ";
+    }
+    of << std::endl;
+  }
+  of.close();
+}
 #endif // USING_REVERSEAD
+
 #ifdef USING_ADOLC
   trace_off();
 #ifdef COMPUTE_GRADIENT
