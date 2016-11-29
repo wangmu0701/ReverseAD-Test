@@ -221,24 +221,70 @@ if (argc > 2) { // the second argument
   if (argc > 1) {
     options[1] = atoi(argv[1]);
   }
-  unsigned int * rind = NULL;
-  unsigned int * cind = NULL;
-  double * values = NULL;
-  int nnz;
-  t1 = k_getTime();
-  sparse_hess(1, n, 0, x, &nnz, &rind, &cind, &values, options);
-  t2 = k_getTime();  
-  if (options[1] == 0) {
-    std::cout << "(direct)";
-  } else if (options[1] == 1) {
-    std::cout << "(indirect)";
+  if (argc <= 2) {
+    unsigned int * rind = NULL;
+    unsigned int * cind = NULL;
+    double * values = NULL;
+    int nnz;
+    t1 = k_getTime();
+    sparse_hess(1, n, 0, x, &nnz, &rind, &cind, &values, options);
+    t2 = k_getTime();  
+    if (options[1] == 0) {
+      std::cout << "(direct)";
+    } else if (options[1] == 1) {
+      std::cout << "(indirect)";
+    }
+    std::cout << "ADOLC Hessian cost : " << t2 - t1 << std::endl;
+    std::cout << "size of hessian = " << nnz << std::endl;
+    for (int i = 0; i < nnz; i++) {
+      //cout << "H["<<rind[i]<<","<<cind[i]<<"] = "<<values[i]<< std::endl;
+      hessian_ad[cind[i]][rind[i]] = values[i];
+    }
+  } else { // argc > 2
+    int num_rows = atoi(argv[2]);
+/*
+    double** v = new double*[n];
+    double** hv = new double*[n];
+    for (int i = 0; i < n; i++) {
+      v[i] = new double[num_rows];
+      hv[i] = new double[num_rows];
+      for (int j = 0; j < num_rows; j++) {
+        hv[i][j] = 0.0;
+        v[i][j] = 0.0;
+      }
+    }
+    for (int i = 0; i < num_rows; i++) {
+      v[i][i] = 1.0;
+    }
+    t1 = k_getTime();
+    hess_mat(1, n, num_rows, x, v, hv);
+    t2 = k_getTime();
+    std::cout << "ADOLC Hessian-Mat cost : " << t2 - t1 << std::endl;
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < num_rows; j++) {
+        hessian_ad[i][j] = hv[i][j];
+      }
+    }
+*/
+    double* v = new double[n];
+    double* hv = new double[n];
+    for (int i = 0; i < n; i++) {
+      v[i] = 0.0; hv[i] = 0.0;
+    }
+    double dummy_sum = 0.0;
+    t1 = k_getTime();
+    for (int i = 0; i < num_rows; i++) {
+      v[i] = 1.0;
+      hess_vec(1, n, x, v, hv);
+      v[i] = 0.0;
+      for (int j = 0; j < n; j++) {
+        hessian_ad[j][i] = hv[j];
+        dummy_sum += hv[j];
+      }
+    }
+    t2 = k_getTime();
+    std::cout << dummy_sum << " ADOLC Hessian-Vec cost : " << t2 - t1 << std::endl;
   }
-  std::cout << "ADOLC Hessian cost : " << t2 - t1 << std::endl;
-  std::cout << "size of hessian = " << nnz << std::endl;
-  for (int i = 0; i < nnz; i++) {
-    //cout << "H["<<rind[i]<<","<<cind[i]<<"] = "<<values[i]<< std::endl;
-    hessian_ad[cind[i]][rind[i]] = values[i];
-  } 
 #endif // COMPUTE_HESSIAN
 #ifdef COMPUTE_HIGHER_ORDER
   int order = atoi(argv[1]);
