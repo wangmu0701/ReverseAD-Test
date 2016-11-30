@@ -1,0 +1,69 @@
+CXX=g++
+CXXFLAGS=-O3 --std=c++11
+REVERSEADPATH=$(HOME)/packages/reversead
+ADOLCPATH=$(HOME)/packages/adolc
+LIBTAYLORPATH=$(HOME)/packages/libtaylor
+
+ADTOOL=-D USING_ADTOOL
+USEREVERSEAD=$(ADTOOL) -D USING_REVERSEAD
+USEADOLC=$(ADTOOL) -D USING_ADOLC
+REV1=-D COMPUTE_GRADIENT #-D CHECK_GRADIENT
+REV2=-D COMPUTE_HESSIAN #-D CHECK_HESSIAN
+REV3=-D COMPUTE_THIRD #-D CHECK_THIRD
+REVH=-D COMPUTE_HIGHER_ORDER #-D CHECK_HIGHER_ORDER
+#TAYLORSPARSE=-D USING_SPARSITY
+
+EXTRASOURCE=./src/fcn3e_am.cpp ./src/tet.cpp ./src/mesh3.cpp ./src/Mesh.cpp ./src/opt3.cpp ./src/elem3.cpp ./src/pre3.cpp
+
+SOURCECPP=./src/mesh_main.cpp
+SOURCEHEADER=./src/mesh_eval.hpp
+SOURCEFILES=$(SOURCECPP) $(SOURCEHEADER)
+COMPILESOURCE=$(SOURCECPP) $(EXTRASOURCE)
+
+TAYLORCPP=./src/mesh_libtaylor.cpp
+TAYLORSOURCE=$(TAYLORCPP) $(EXTRASOURCE)
+
+all : feval_main rev_gradient rev_hessian rev_third rev_high\
+      adolc_gradient adolc_hessian adolc_high\
+      taylor_gradient taylor_hessian taylor_third
+#all : adolc_hessian
+
+feval_main : $(SOURCEFILES)
+	$(CXX) $(CXXFLAGS) -o $@ $(COMPILESOURCE)
+
+rev_gradient : $(SOURCEFILES)
+	$(CXX) $(CXXFLAGS) $(USEREVERSEAD) $(REV1) -o $@ $(COMPILESOURCE) -I$(REVERSEADPATH)/include -L$(REVERSEADPATH)/lib -lreversead
+
+rev_hessian : $(SOURCEFILES)
+	$(CXX) $(CXXFLAGS) $(USEREVERSEAD) $(REV2) -o $@ $(COMPILESOURCE) -I$(REVERSEADPATH)/include -L$(REVERSEADPATH)/lib -lreversead
+
+rev_third : $(SOURCEFILES)
+	$(CXX) $(CXXFLAGS) $(USEREVERSEAD) $(REV3) -o $@ $(COMPILESOURCE) -I$(REVERSEADPATH)/include -L$(REVERSEADPATH)/lib -lreversead
+
+rev_high : $(SOURCEFILES)
+	$(CXX) $(CXXFLAGS) $(USEREVERSEAD) $(REVH) -o $@ $(COMPILESOURCE) -I$(REVERSEADPATH)/include -L$(REVERSEADPATH)/lib -lreversead
+
+adolc_gradient : $(SOURCEFILES)
+	$(CXX) $(CXXFLAGS) $(USEADOLC) $(REV1) -o $@ $(COMPILESOURCE) -I$(ADOLCPATH)/include -L$(ADOLCPATH)/lib64 -ladolc
+
+adolc_hessian : $(SOURCEFILES)
+	$(CXX) $(CXXFLAGS) $(USEADOLC) $(REV2) -o $@ $(COMPILESOURCE) -I$(ADOLCPATH)/include -L$(ADOLCPATH)/lib64 -ladolc
+
+adolc_high : $(SOURCEFILES)
+	$(CXX) $(CXXFLAGS) $(USEADOLC) $(REVH) -o $@ $(COMPILESOURCE) -I$(ADOLCPATH)/include -L$(ADOLCPATH)/lib64 -ladolc
+
+taylor_gradient : $(TAYLORCPP) $(SOURCEHEADER)
+	$(CXX) $(CXXFLAGS) $(REV1) -o $@ $(TAYLORSOURCE) -I$(LIBTAYLORPATH)/include
+
+taylor_hessian : $(TAYLORCPP) $(SOURCEHEADER)
+	$(CXX) $(CXXFLAGS) $(REV2) -o $@ $(TAYLORSOURCE) -I$(LIBTAYLORPATH)/include
+
+taylor_third : $(TAYLORCPP) $(SOURCEHEADER)
+	$(CXX) $(CXXFLAGS) $(REV3) -o $@ $(TAYLORSOURCE) -I$(LIBTAYLORPATH)/include
+
+clean:
+	rm feval_main rev_gradient rev_hessian rev_third rev_high\
+           adolc_gradient adolc_hessian adolc_high\
+           taylor_gradient taylor_hessian taylor_third
+
+.PHONY : clean
