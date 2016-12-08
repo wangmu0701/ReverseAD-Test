@@ -132,7 +132,8 @@ int main(int argc, char* argv[])
 #endif // REVERSEAD_GRADIENT 
 #ifdef COMPUTE_HESSIAN
   order = 2;
-  double hessian_ad[n][n];
+  std::cout << "WTF?" << std::endl;
+  //double hessian_ad[n][n];
   t1 = k_getTime();
   BaseReverseHessian<double> hessian(trace);
   std::shared_ptr<DerivativeTensor<size_t, double>> tensor = hessian.compute(n, 1);
@@ -143,14 +144,14 @@ int main(int argc, char* argv[])
   double* values;
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
-      hessian_ad[i][j] = 0;
+      //hessian_ad[i][j] = 0;
     }
   }
   tensor->get_internal_coordinate_list(0, 2, &size, &tind, &values);
   std::cout << "size of hessian = " << size << std::endl;
   for (int i = 0; i < size; i++) {
     //cout << "H["<<tind[i][0]<<","<<tind[i][1]<<"] = " << values[i]<<endl;
-    hessian_ad[tind[i][0]][tind[i][1]] = values[i];
+    //hessian_ad[tind[i][0]][tind[i][1]] = values[i];
   }
 #endif // COMPUTE_HESSIAN
 #ifdef COMPUTE_THIRD
@@ -169,8 +170,16 @@ int main(int argc, char* argv[])
 #ifdef COMPUTE_HIGHER_ORDER
   order = atoi(argv[1]);
   t1 = k_getTime();
+  std::shared_ptr<DerivativeTensor<size_t, double>> tensor;
+if (argc <= 2) {
   BaseReverseTensor<double> reverse_tensor(trace, order);
-  std::shared_ptr<DerivativeTensor<size_t, double>> tensor = reverse_tensor.compute(n, 1);
+  tensor = reverse_tensor.compute(n, 1);
+  std::cout << "(FLAT)";
+} else {
+  BaseReverseGeneric<double> reverse_tensor(trace, order);
+  tensor = reverse_tensor.compute(n, 1);
+  std::cout << "(GENERIC)";
+}
   t2 = k_getTime();
   std::cout << "ReverseAD Order["<<order<<"] cost : " << t2 - t1 << std::endl;
   size_t size;
@@ -211,10 +220,10 @@ if (argc > 2) { // the second argument
   std::cout << "ADOLC Gradient cost : " << t2 - t1 << std::endl;
 #endif // COMPUTE_GRADIENT
 #ifdef COMPUTE_HESSIAN
-  double hessian_ad[n][n];
+  //double hessian_ad[n][n];
   for (int i =0; i < n; i++) {
     for (int j = 0; j < n; j++) {
-      hessian_ad[i][j] = 0.0;
+      //hessian_ad[i][j] = 0.0;
     }
   }
   int options[2] = {0, 1}; 
@@ -238,7 +247,7 @@ if (argc > 2) { // the second argument
     std::cout << "size of hessian = " << nnz << std::endl;
     for (int i = 0; i < nnz; i++) {
       //cout << "H["<<rind[i]<<","<<cind[i]<<"] = "<<values[i]<< std::endl;
-      hessian_ad[cind[i]][rind[i]] = values[i];
+      //hessian_ad[cind[i]][rind[i]] = values[i];
     }
   } else { // argc > 2
     int num_rows = atoi(argv[2]);
@@ -278,7 +287,7 @@ if (argc > 2) { // the second argument
       hess_vec(1, n, x, v, hv);
       v[i] = 0.0;
       for (int j = 0; j < n; j++) {
-        hessian_ad[j][i] = hv[j];
+        //hessian_ad[j][i] = hv[j];
         dummy_sum += hv[j];
       }
     }

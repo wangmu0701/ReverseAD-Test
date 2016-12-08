@@ -77,10 +77,10 @@ int main(int argc, char* argv[])
   typedef ctaylor<double, 2> ttype;
   ttype* xad = new ttype[n];
   ttype yad = 0;
-  double hessian_ad[n][n];
+  //double hessian_ad[n][n];
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
-      hessian_ad[i][j] = 0.0;
+      //hessian_ad[i][j] = 0.0;
     }
   }
   for (int i = 0; i < n; i++) {
@@ -101,17 +101,18 @@ if (argc >= 2) {
     xad[tind[0]].set(VAR0, 1);
     xad[tind[1]].set(VAR1, 1);
     yad = aFcn<ttype>(xad, m->ne, m->e);
-    hessian_ad[tind[0]][tind[1]] = yad.get(VAR0|VAR1);
+    //hessian_ad[tind[0]][tind[1]] = yad.get(VAR0|VAR1);
     xad[tind[0]] = x[tind[0]];
     xad[tind[1]] = x[tind[1]];
   }
+  std::cout << "(SP)";
 } else {
   for (int i = 0; i < n; i++) {
     for (int j = 0; j <= i; j++) {
       xad[i].set(VAR0, 1);
       xad[j].set(VAR1, 1);
       yad = aFcn<ttype>(xad, m->ne, m->e);
-      hessian_ad[i][j] = yad.get(VAR0|VAR1);
+      //hessian_ad[i][j] = yad.get(VAR0|VAR1);
       xad[i] = x[i];
       xad[j] = x[j];
     }
@@ -125,6 +126,7 @@ if (argc >= 2) {
   typedef ctaylor<double, 3> ttype;
   ttype* xad = new ttype[n];
   ttype yad = 0;
+/*
   double third_ad[n][n][n];
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
@@ -133,6 +135,7 @@ if (argc >= 2) {
       }
     }
   }
+*/
   for (int i = 0; i < n; i++) {
     xad[i] = x[i];
   }
@@ -152,7 +155,7 @@ if (argc >= 2) {
     xad[tind[1]].set(VAR1, 1);
     xad[tind[2]].set(VAR2, 1);
     yad = aFcn<ttype>(xad, m->ne, m->e);
-    third_ad[tind[0]][tind[1]][tind[2]] = yad.get(VAR0|VAR1|VAR2);
+    //third_ad[tind[0]][tind[1]][tind[2]] = yad.get(VAR0|VAR1|VAR2);
     xad[tind[0]] = x[tind[0]];
     xad[tind[1]] = x[tind[1]];
     xad[tind[2]] = x[tind[2]];
@@ -165,7 +168,7 @@ if (argc >= 2) {
         xad[j].set(VAR1, 1);
         xad[k].set(VAR2, 1);
         yad = aFcn<ttype>(xad, m->ne, m->e);
-        third_ad[i][j][k] = yad.get(VAR0|VAR1|VAR2);
+        //third_ad[i][j][k] = yad.get(VAR0|VAR1|VAR2);
         xad[i] = x[i];
         xad[j] = x[j];
         xad[k] = x[k];
