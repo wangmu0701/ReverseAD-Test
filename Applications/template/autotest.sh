@@ -2,7 +2,7 @@
 
 #INSTANCE_PATH
 export INSTANCE_PATH=./gmm
-INPUTS=./../gmm/gmm_instances/1k/gmm_d10_K5.txt
+INPUTS=./../gmm/gmm_instances/1k/gmm_d10_K10.txt
 
 #DEVORDER
 export DEVORDER=2
