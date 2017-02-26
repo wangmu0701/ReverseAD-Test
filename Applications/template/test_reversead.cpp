@@ -27,6 +27,8 @@ using namespace ReverseAD;
 //#define ORDER 2
 //#define METHOD 2
 
+#define DUMP_SPARSITY
+
 double k_getTime() {
   struct timeval v;
   struct timezone z;
@@ -83,7 +85,19 @@ double evaluate_derivatives(int n, int m, std::shared_ptr<TrivialTrace<double>> 
   }
 #endif
 
-  printf("ReverseAD nnz[%u] method[%d] order[%d] timing = %.6f\n", size, options[1], options[0], time_elapsed);
+#ifdef DUMP_SPARSITY
+  std::ofstream of("sparsity.txt");
+  of << order << " " << size << std::endl;
+  for (int i = 0; i < size; i++) {
+    for (int j = 0; j < order; j++) {
+      of << tind[i][j] << " ";
+    }
+    of << std::endl;
+  }
+  of.close();
+#endif
+
+  printf("ReverseAD nnz[%zu] method[%d] order[%d] timing = %.6f\n", size, options[1], options[0], time_elapsed);
   return time_elapsed;
 }
 
