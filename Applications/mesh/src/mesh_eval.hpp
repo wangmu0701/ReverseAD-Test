@@ -14,7 +14,7 @@ double sqrt6 = 4.08248290463863052509822647505e-01;        /*  1.0/sqrt(6.0) */
 double a = 3.33333333333333333333333333333e-01;        /*  1.0/3.0       */
 double b = -6.66666666666666666666666666667e-01;        /* -2.0/3.0       */
 
-char meshFile[20] = "duct8.mesh";
+char meshFile[20] = "tire.mesh";
 
 template <typename T>
 bool a_fcn(T& obj, const T x[12])

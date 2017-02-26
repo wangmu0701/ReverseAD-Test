@@ -1,5 +1,5 @@
 ReverseADHOME = $(HOME)/packages/reversead
-ADOLCHOME = $(HOME)/packages/adolc_edge
+ADOLCHOME = $(HOME)/packages/adolc
 
 CXX=g++
 

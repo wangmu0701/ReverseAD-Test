@@ -48,11 +48,11 @@
 //#define ndis  10                     // =>
 //#define cstr 4375
 // 2
-#define ndis  20                     // =>
-#define cstr 8575
+//#define ndis  20                     // =>
+//#define cstr 8575
 // 3
-//#define ndis  40                     // =>  n = 16980
-//#define cstr 16975
+#define ndis  40                     // =>  n = 16980
+#define cstr 16975
 // 4
 //#define ndis  60                     // =>  n = 25380
 //#define cstr 25375
