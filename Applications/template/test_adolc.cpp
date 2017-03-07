@@ -111,6 +111,24 @@ double evaluate_derivatives(int n, int m, double* x, int* options) {
         }
         hess_vec(TAG, n, x, v, Hv);
         nnz = n;
+      } else if (options[1] == 5) { // dense second order reverse
+        double** H = new double*[n];
+        for (int i = 0; i < n; i++) {
+          H[i] = new double[n];
+        }
+        second_order_rev(TAG, n, x, H);
+        nnz = n*n;
+#ifdef PRINT_RESULT
+        for (int i = 0; i < n; i++) {
+          for (int j = 0; j <= i; j++) {
+            printf("H[%d, %d] = %.6f\n", i, j, H[i][j]);
+          }
+        }
+#endif
+        for (int i = 0; i < n; i++) {
+          delete[] H[i];
+        }
+        delete[] H;
       }
     } else if (order == 1) { // Gradient or Jacobian
       if (m == 1) { // gradient
