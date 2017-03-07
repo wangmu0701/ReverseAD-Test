@@ -15,6 +15,7 @@
 #include <memory>
 #include <cstdlib>
 #include <iostream>
+#include <fstream>
 #include "sys/time.h"
 
 #include "func_eval.hpp"
@@ -81,7 +82,36 @@ double evaluate_derivatives(int n, int m, double* x) {
       std::cout << "Up to third order for libtaylor" << std::endl;
     }
   } else {
-    
+    std::ifstream inf("sparsity.txt", std::ifstream::in);
+    size_t order;
+    size_t size;
+    inf >> order >> size;
+    assert(order == ORDER);
+    std::cout << "SpTaylor with " << size << " nonzeros." << std::endl;
+    if (ORDER == 1) {
+    } else if (ORDER == 2) {
+      size_t tind[2];
+      for (int i = 0; i < size; i++) {
+        inf >> tind[0] >> tind[1];
+        xad[tind[0]].set(VAR0, 1);
+        xad[tind[1]].set(VAR1, 1);
+        func_eval<ttype>(n, xad, m, yad);
+        xad[tind[0]] = x[tind[0]];
+        xad[tind[1]] = x[tind[1]];
+      }
+    } else if (ORDER == 3) {
+      size_t tind[3];
+      for (int i = 0; i < size; i++) {
+        inf >> tind[0] >> tind[1] >> tind[2];
+        xad[tind[0]].set(VAR0, 1);
+        xad[tind[1]].set(VAR1, 1);
+        xad[tind[2]].set(VAR2, 1);
+        func_eval<ttype>(n, xad, m, yad);
+        xad[tind[0]] = x[tind[0]];
+        xad[tind[1]] = x[tind[1]];
+        xad[tind[2]] = x[tind[2]];
+      }
+    }
   }
 
   double time_elapsed = k_getTime() - t1;
