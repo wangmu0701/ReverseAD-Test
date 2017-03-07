@@ -1,4 +1,4 @@
-INSTANCE_PATH=./mesh
+#INSTANCE_PATH=./mesh
 #INSTANCE_PATH=./gmm
 #INSTANCE_PATH=./hand
 

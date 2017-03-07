@@ -2,7 +2,7 @@
 
 #INSTANCE_PATH
 export INSTANCE_PATH=./gmm
-INPUTS=./../gmm/gmm_instances/1k/gmm_d10_K10.txt
+INPUTS=./../gmm/gmm_instances/1k/gmm_d20_K10.txt
 
 #DEVORDER
 export DEVORDER=2
@@ -30,7 +30,7 @@ for ((i=0;i<N;i++))
 do
   ./test_reversead $INPUTS
 done
-for ((i=0;i<N;i++))
+for ((i=0;i<5;i++))
 do
   ./test_libtaylor $INPUTS
 done
