@@ -1,0 +1,75 @@
+INSTANCE_PATH=./mesh
+#INSTANCE_PATH=./gmm
+#INSTANCE_PATH=./hand
+
+ADOLCPATH=$(HOME)/packages/adolc
+
+TAYLOR=METHOD=0
+INDIRECT=METHOD=1
+DIRECT=METHOD=2
+FULLHESS=METHOD=3
+DENSEHESS=METHOD=5
+SPARSEHESS=METHOD=6
+HESSMAT=METHOD=7
+
+ADOLCFLAGS=-D ORDER=$(DEVORDER)
+
+CXX=g++
+
+CXXFLAGS=-std=c++11 -O3 -I$(INSTANCE_PATH)
+
+all : adolc_taylor adolc_indirect adolc_direct adolc_fullhess adolc_hessmat adolc_dense adolc_sparse
+
+adolc_taylor : func_eval.o adolc_taylor.o
+	$(CXX) $(CXXFLAGS) -D ORDER=2 -D $(TAYLOR) -o $@ $^ -I$(INSTANCE_PATH) -I$(ADOLCPATH)/include -L$(ADOLCPATH)/lib64 -ladolc
+
+adolc_taylor.o : test_adolc.cpp
+	$(CXX) $(CXXFLAGS) -D ORDER=2 -D $(TAYLOR) -o $@ -c $^ -I$(ADOLCPATH)/include
+
+adolc_indirect : func_eval.o adolc_indirect.o
+	$(CXX) $(CXXFLAGS) -D ORDER=2 -D $(INDIRECT) -o $@ $^ -I$(INSTANCE_PATH) -I$(ADOLCPATH)/include -L$(ADOLCPATH)/lib64 -ladolc
+
+adolc_indirect.o : test_adolc.cpp
+	$(CXX) $(CXXFLAGS) -D ORDER=2 -D $(INDIRECT) -o $@ -c $^ -I$(ADOLCPATH)/include
+
+
+adolc_direct : func_eval.o adolc_direct.o
+	$(CXX) $(CXXFLAGS) -D ORDER=2 -D $(DIRECT) -o $@ $^ -I$(INSTANCE_PATH) -I$(ADOLCPATH)/include -L$(ADOLCPATH)/lib64 -ladolc
+
+adolc_direct.o : test_adolc.cpp
+	$(CXX) $(CXXFLAGS) -D ORDER=2 -D $(DIRECT) -o $@ -c $^ -I$(ADOLCPATH)/include
+
+
+adolc_fullhess : func_eval.o adolc_fullhess.o
+	$(CXX) $(CXXFLAGS) -D ORDER=2 -D $(FULLHESS) -o $@ $^ -I$(INSTANCE_PATH) -I$(ADOLCPATH)/include -L$(ADOLCPATH)/lib64 -ladolc
+
+adolc_fullhess.o : test_adolc.cpp
+	$(CXX) $(CXXFLAGS) -D ORDER=2 -D $(FULLHESS) -o $@ -c $^ -I$(ADOLCPATH)/include
+
+adolc_hessmat : func_eval.o adolc_hessmat.o
+	$(CXX) $(CXXFLAGS) -D ORDER=2 -D $(HESSMAT) -o $@ $^ -I$(INSTANCE_PATH) -I$(ADOLCPATH)/include -L$(ADOLCPATH)/lib64 -ladolc
+
+adolc_hessmat.o : test_adolc.cpp
+	$(CXX) $(CXXFLAGS) -D ORDER=2 -D $(HESSMAT) -o $@ -c $^ -I$(ADOLCPATH)/include
+
+adolc_dense : func_eval.o adolc_dense.o
+	$(CXX) $(CXXFLAGS) -D ORDER=2 -D $(DENSEHESS) -o $@ $^ -I$(INSTANCE_PATH) -I$(ADOLCPATH)/include -L$(ADOLCPATH)/lib64 -ladolc
+
+adolc_dense.o : test_adolc.cpp
+	$(CXX) $(CXXFLAGS) -D ORDER=2 -D $(DENSEHESS) -o $@ -c $^ -I$(ADOLCPATH)/include
+
+
+adolc_sparse : func_eval.o adolc_sparse.o
+	$(CXX) $(CXXFLAGS) -D ORDER=2 -D $(SPARSEHESS) -o $@ $^ -I$(INSTANCE_PATH) -I$(ADOLCPATH)/include -L$(ADOLCPATH)/lib64 -ladolc
+
+adolc_sparse.o : test_adolc.cpp
+	$(CXX) $(CXXFLAGS) -D ORDER=2 -D $(SPARSEHESS) -o $@ -c $^ -I$(ADOLCPATH)/include
+
+func_eval.o : $(INSTANCE_PATH)/func_eval.cpp
+	$(CXX) $(CXXFLAGS) -o $@ -c $^ -I$(INSTANCE_PATH)
+
+
+.PHONY : clean
+
+clean :
+	rm adolc_taylor adolc_indirect adolc_direct adolc_fullhess adolc_hessmat adolc_dense adolc_sparse
