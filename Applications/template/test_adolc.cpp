@@ -44,7 +44,9 @@ double k_getTime() {
                 2 : Indirect
                 3 : FullHess
                 4 : Single HV
-                
+                5 : Dense SecRev
+                6 : Sparse SecRev
+                7 : Hessian-Matrix                
 */
 
 double evaluate_derivatives(int n, int m, double* x, int* options) {
@@ -83,7 +85,9 @@ double evaluate_derivatives(int n, int m, double* x, int* options) {
           printf("H[%d, %d] = %.6f\n", rind[i], cind[i], values[i]);
         }
 #endif
-
+        free(rind);
+        free(cind);
+        free(values);
       } else if (options[1] == 3) { // FullHess
         double** H = new double*[n];
         for (int i = 0; i < n; i++) {
@@ -116,7 +120,7 @@ double evaluate_derivatives(int n, int m, double* x, int* options) {
         for (int i = 0; i < n; i++) {
           H[i] = new double[n];
         }
-        second_order_rev(TAG, n, x, H);
+        hessian_dense(TAG, n, x, H);
         nnz = n*n;
 #ifdef PRINT_RESULT
         for (int i = 0; i < n; i++) {
@@ -129,6 +133,52 @@ double evaluate_derivatives(int n, int m, double* x, int* options) {
           delete[] H[i];
         }
         delete[] H;
+      } else if (options[1] == 6){ // sparse second order reverse
+        unsigned int * rind = NULL;
+        unsigned int * cind = NULL;
+        double * values = NULL;
+        hessian_sparse(TAG, n, x, &nnz, &rind, &cind, &values);
+#ifdef PRINT_RESULT
+        for (int i = 0; i < nnz; i++) {
+          printf("H[%d, %d] = %.6f\n", rind[i], cind[i], values[i]);
+        }
+#endif
+        free(rind);
+        free(cind);
+        free(values);
+      } else if (options[1] == 7) { // Hess-matrix options
+        double** H  = myalloc2(n, n);
+        double y;
+        double*** Xppp = myalloc3(n, n, 1);
+        double*** Yppp = myalloc3(1, n, 1);
+        for (int i = 0; i < n; i++) {
+          for (int j = 0; j < n; j++) {
+             Xppp[i][j][0] = 0;
+          }
+          Xppp[i][i][0] = 1.0;
+        }
+        double** Upp = myalloc2(1,2);
+        Upp[0][0] = 1; Upp[0][1] = 0;
+        double*** Zppp = myalloc3(n, n, 2);
+        int ret_val = hov_wk_forward(TAG,1,n,1,2,n,x,Xppp,&y,Yppp);
+        ret_val = hos_ov_reverse(TAG,1,n,1,n,Upp,Zppp);
+        for (int i = 0; i < n; ++i) {
+          for (int l = 0; l < n; ++l) {
+            H[l][i] = Zppp[i][l][1];
+          }
+        }
+#ifdef PRINT_RESULT
+        for (int i = 0; i < n; i++) {
+          for (int j = 0; j <= i; j++) {
+            printf("H[%d, %d] = %.6f\n", i, j, H[i][j]);
+          }
+        }
+#endif
+        myfree2(H);
+        myfree3(Xppp);
+        myfree3(Yppp);
+        myfree2(Upp);
+        myfree3(Zppp);
       }
     } else if (order == 1) { // Gradient or Jacobian
       if (m == 1) { // gradient
